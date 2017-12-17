@@ -11,21 +11,31 @@ export default class Todo extends Component {
     
     constructor(props){
         super(props)
-        this.state = { description: '', list: [] }
+        this.state = { description: '', list: [], prioritize: 0 }
 
         this.handleChange = this.handleChange.bind(this)
         this.handleAdd = this.handleAdd.bind(this)
         this.handleRemove = this.handleRemove.bind(this)
         this.handleMarkAsDone = this.handleMarkAsDone.bind(this)
         this.handleMarkAsPending = this.handleMarkAsPending.bind(this)
+        this.handlePrioritize = this.handlePrioritize.bind(this)
+        this.handleSearch = this.handleSearch.bind(this)
+
+        this.handleClear = this.handleClear.bind(this)
 
         this.refresh()
         
     }
 
-    refresh(){
-        axios.get(`${URL}?sort=-createdAd`)
-            .then(resp => this.setState({...this.state, description : '', list : resp.data}))
+    refresh(description=''){
+        const search = description ? `&description__regex=/${description}/` : ''
+        axios.get(`${URL}?sort=-prioritize${search}`)
+            .then(resp => this.setState({...this.state, description, list : resp.data}))
+            
+    }
+
+    handleClear(){
+        this.refresh()
     }
 
     handleChange(e) {
@@ -34,26 +44,39 @@ export default class Todo extends Component {
 
     handleAdd(){
         const description = this.state.description
-        axios.post(URL, {description})
+        const prioritize = 0
+        axios.post(URL, {description, prioritize})
             .then(resp => this.refresh())
     }
 
     handleRemove(todo) {
         axios.delete(`${URL}/${todo._id}`)
-            .then(resp => this.refresh())
+            .then(resp => this.refresh(this.state.description))
     }
 
     handleMarkAsDone(todo) {
         axios.put(`${URL}/${todo._id}`, {...todo, done: true})
-            .then(resp => this.refresh())
+            .then(resp => this.refresh(this.state.description))
     }
 
     handleMarkAsPending(todo) {
         axios.put(`${URL}/${todo._id}`, {...todo, done: false})
-        .then(resp => this.refresh())
+        .then(resp => this.refresh(this.state.description))
     }
 
-    
+    handlePrioritize(todo) {
+        this.setState({...this.state, prioritize: this.state.prioritize + 1})
+        axios.put(`${URL}/${todo._id}`, {...todo, prioritize: this.state.prioritize})
+        .then(resp => this.refresh(this.state.description))
+    }
+
+    handleSearch(){
+        this.refresh(this.state.description)
+    }
+
+    orderByPrioritize(a ,b){
+        return a.prioritize>b.prioritize
+    }
     
     render(){
         return (
@@ -62,12 +85,15 @@ export default class Todo extends Component {
                 <TodoForm 
                     description={ this.state.description }
                     handleChange={this.handleChange}
-                    handleAdd={this.handleAdd}/>
+                    handleAdd={this.handleAdd}
+                    handleSearch={this.handleSearch}
+                    handleClear={this.handleClear}/>
                 <TodoList 
                     list={this.state.list}
                     handleMarkAsDone={this.handleMarkAsDone}
                     handleMarkAsPending={this.handleMarkAsPending}
-                    handleRemove={this.handleRemove}/>
+                    handleRemove={this.handleRemove}
+                    handlePrioritize={this.handlePrioritize}/>
             </div>
         )
     }
