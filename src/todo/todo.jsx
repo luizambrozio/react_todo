@@ -65,8 +65,7 @@ export default class Todo extends Component {
     }
 
     handlePrioritize(todo) {
-        this.setState({...this.state, prioritize: this.state.prioritize + 1})
-        axios.put(`${URL}/${todo._id}`, {...todo, prioritize: this.state.prioritize})
+        axios.put(`${URL}/${todo._id}`, {...todo, prioritize: todo.prioritize + 1})
         .then(resp => this.refresh(this.state.description))
     }
 
