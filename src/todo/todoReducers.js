@@ -1,24 +1,14 @@
-const INITIAL_STATE = {
-    description: 'ler livro',
-    list: [{
-        _id:1,
-        description: 'teste 1',
-        done: true
-    }, {
-        _id: 2,
-        description: 'teste 2',
-        done: false
-    }, {
-        _id: 3,
-        description: 'teste 3',
-        done: false
-    }]
-}
+const INITIAL_STATE = {description: '', list: [] }
 
 export default (state = INITIAL_STATE, action) => {
     switch(action.type){
         case 'DESCRIPTON_CHANGE':
-            return {...state, description: action.payload}
+            return {...state, description: action.payload }
+        case 'TODO_SEARCHED':
+            return {...state, list: action.payload.data }
+        case 'TODO_ADDED':
+            return {...state, description: ''}
+        
         default:
         return state
     }
